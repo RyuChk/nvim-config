@@ -40,7 +40,7 @@ autocmd('TextYankPost', {
     end,
 })
 
-autocmd({"BufWritePre"}, {
+autocmd({ "BufWritePre" }, {
     group = RewphgGroup,
     pattern = "*",
     command = [[%s/\s\+$//e]],
