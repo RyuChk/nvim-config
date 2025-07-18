@@ -6,14 +6,29 @@ return {
             'williamboman/mason-lspconfig.nvim',
             'rafamadriz/friendly-snippets',
             'j-hui/fidget.nvim',
-            'mfussenegger/nvim-jdtls',
             'kristijanhusak/vim-dadbod-ui',
-            { 'L3MON4D3/LuaSnip', version = 'v2.*' },
+            { 'L3MON4D3/LuaSnip',                     version = 'v2.*' },
             { 'tpope/vim-dadbod',                     lazy = true },
             { 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true },
             {
+                "folke/lazydev.nvim",
+                ft = "lua",
+                opts = {
+                    library = {
+                        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+                    },
+                },
+            },
+            {
                 'saghen/blink.cmp',
-                version = "1.*",
+                dependencies = {
+                    "rafamadriz/friendly-snippets",
+                    "MahanRahmati/blink-nerdfont.nvim",
+                    "moyiz/blink-emoji.nvim",
+                },
+                version = '1.*',
+                ---@module 'blink.cmp'
+                ---@type blink.cmp.Config
                 opts = {
                     snippets = { preset = 'luasnip' },
                     keymap = {
@@ -25,23 +40,102 @@ return {
                         ['<C-space>'] = { function(cmp) cmp.show({ providers = { 'snippets' } }) end },
                         ['<C-e>'] = {},
                     },
+                    signature = { enabled = true },
                     sources = {
-                        default = { 'lsp', 'path', 'snippets', 'buffer' },
+                        default = {
+                            "snippets",
+                            "lsp",
+                            "path",
+                            "buffer",
+                            "nerdfont",
+                            "emoji",
+                        },
                         per_filetype = { sql = { 'dadbod' } },
                         providers = {
-                            dadbod = { module = "vim_dadbod_completion.blink" },
+                            snippets = {
+                                score_offset = 30,
+                            },
+                            lazydev = {
+                                name = "LazyDev",
+                                module = "lazydev.integrations.blink",
+                                score_offset = 100,
+                            },
+                            nerdfont = {
+                                module = "blink-nerdfont",
+                                name = "Nerd Fonts",
+                                opts = { insert = true },
+                            },
+                            emoji = {
+                                module = "blink-emoji",
+                                name = "Emoji",
+                                -- score_offset = 15,
+                                opts = { insert = true },
+                                should_show_items = function()
+                                    return vim.tbl_contains({ "gitcommit", "markdown" }, vim.o.filetype)
+                                end,
+                            },
                         },
-                    }
+                        transform_items = function(_, items)
+                            return vim.tbl_filter(function(item)
+                                return not (
+                                    item.kind == require("blink.cmp.types").CompletionItemKind.Snippet
+                                    and item.source_name == "LSP"
+                                )
+                            end, items)
+                        end,
+                    },
+                    appearance = {
+                        nerd_font_variant = 'mono'
+                    },
+                    completion = {
+                        menu = {
+                            draw = {
+                                columns = {
+                                    { "kind_icon", "label", "label_description", "source_name", gap = 1 },
+                                },
+                                components = {
+                                    label_description = {
+                                        width = { max = 50 },
+                                    },
+                                    source_name = {
+                                        text = function(ctx)
+                                            return "[" .. ctx.source_name .. "]"
+                                        end,
+                                    },
+                                },
+                            },
+                        },
+                        list = {
+                            selection = {
+                                preselect = true,
+                            },
+                        },
+                        documentation = {
+                            auto_show = true,
+                            -- auto_show_delay_ms = 2000,
+                        },
+                        ghost_text = { enabled = true },
+                    },
+                    fuzzy = { implementation = "prefer_rust_with_warning" }
                 },
+                opts_extend = { "sources.default" }
             },
         },
         config = function()
-            local cmp = require('blink.cmp')
-            local capabilities = vim.tbl_deep_extend(
-                "force",
-                {},
-                vim.lsp.protocol.make_client_capabilities(),
-                cmp.get_lsp_capabilities())
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+
+            -- setup capabilities
+            capabilities = vim.tbl_deep_extend('force', capabilities,
+                require('blink.cmp').get_lsp_capabilities({}, false))
+
+            capabilities = vim.tbl_deep_extend("force", capabilities, {
+                textDocument = {
+                    foldingRange = {
+                        dynamicRegistration = false,
+                        lineFoldingOnly = true
+                    }
+                }
+            })
 
             require("fidget").setup({})
             require("mason").setup()
@@ -51,88 +145,6 @@ return {
                     "rust_analyzer",
                     "gopls",
                     "jdtls",
-                },
-                handlers = {
-                    function(server_name) -- default handler (optional)
-                        require("lspconfig")[server_name].setup {
-                            capabilities = capabilities
-                        }
-                    end,
-
-                    zls = function()
-                        local lspconfig = require("lspconfig")
-                        lspconfig.zls.setup({
-                            root_dir = lspconfig.util.root_pattern(".git", "build.zig", "zls.json"),
-                            settings = {
-                                zls = {
-                                    enable_inlay_hints = true,
-                                    enable_snippets = true,
-                                    warn_style = true,
-                                },
-                            },
-                        })
-                        vim.g.zig_fmt_parse_errors = 0
-                        vim.g.zig_fmt_autosave = 0
-                    end,
-
-                    ["lua_ls"] = function()
-                        local lspconfig = require("lspconfig")
-                        lspconfig.lua_ls.setup {
-                            capabilities = capabilities,
-                            settings = {
-                                Lua = {
-                                    runtime = { version = "Lua 5.1" },
-                                    diagnostics = {
-                                        globals = { "bit", "vim", "it", "describe", "before_each", "after_each" },
-                                    }
-                                }
-                            }
-                        }
-                    end,
-
-                    ["yamlls"] = function()
-                        local lspconfig = require('lspconfig')
-                        lspconfig.yamlls.setup {
-                            capabilities = capabilities,
-                            settings = {
-                                yaml = {
-                                    validate = true,
-                                    schemaStore = {
-                                        enable = false,
-                                        url = "",
-                                    },
-                                    schemas = {
-                                    }
-                                }
-                            }
-                        }
-                    end,
-
-                    ["jdtls"] = function()
-                        local lspconfig = require('lspconfig')
-                        lspconfig.jdtls.setup {
-                            cmd = { vim.fn.expand('~/.local/share/nvim/mason/bin/jdtls') },
-                            root_dir = require('lspconfig').util.root_pattern('.git', 'pom.xml', 'build.gradle'),
-                            settings = {
-                                java = {
-                                    signatureHelp = { enabled = true },
-                                    -- contentProvider = { preferred = 'fernflower' },
-                                }
-                            }
-                        }
-                    end
-                }
-            })
-
-            vim.diagnostic.config({
-                -- update_in_insert = true,
-                float = {
-                    focusable = false,
-                    style = "minimal",
-                    border = "rounded",
-                    source = "always",
-                    header = "",
-                    prefix = "",
                 },
             })
         end
