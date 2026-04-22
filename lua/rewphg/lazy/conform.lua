@@ -11,10 +11,6 @@ return {
                 json = { "prettier" },
                 yaml = { "prettier" },
                 markdown = { "prettier" },
-                typescript = { "prettier" },
-                javascript = { "prettier" },
-                typescriptreact = { "prettier" },
-                javascriptreact = { "prettier" },
             },
             args = {},
         }

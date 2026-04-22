@@ -29,6 +29,8 @@ return {
             callback = function()
                 ts.install({
                     'go',
+                    'yaml',
+                    'swift',
                     'bash',
                     'comment',
                     'css',

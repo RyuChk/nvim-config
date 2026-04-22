@@ -58,3 +58,6 @@ vim.keymap.set("n", "<leader>wh", ":split<Return>", opts)
 
 -- remap virtual block
 vim.keymap.set('n', '<leader>v', '<C-v>', { noremap = true, silent = true })
+
+-- remap neotree
+vim.keymap.set('n', '<C-b>', ':Neotree toggle<CR>', { noremap = true, silent = true, desc = 'Toggle Neotree' })
