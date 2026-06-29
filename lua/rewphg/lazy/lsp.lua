@@ -3,7 +3,6 @@ return {
     dependencies = {
         'williamboman/mason.nvim',
         'williamboman/mason-lspconfig.nvim',
-        'j-hui/fidget.nvim',
         'saghen/blink.cmp', -- bare ref: capabilities + load order (full spec in blink.lua)
     },
     opts = {
@@ -38,7 +37,6 @@ return {
         local capabilities = vim.lsp.protocol.make_client_capabilities()
         local masonConfig = require('mason-lspconfig')
 
-        require("fidget").setup({})
         require("mason").setup()
 
         -- 1. Prepare Mason Ensure Installed List
