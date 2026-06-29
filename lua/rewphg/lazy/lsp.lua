@@ -73,5 +73,24 @@ return {
             vim.lsp.config(server, server_opts)
             vim.lsp.enable(server)
         end
+
+        -- 3. Per-buffer LSP keymaps
+        vim.api.nvim_create_autocmd('LspAttach', {
+            group = vim.api.nvim_create_augroup('RewphgLsp', {}),
+            callback = function(e)
+                local bufopts = { buffer = e.buf }
+                vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, bufopts)
+                vim.keymap.set("n", "gr", function() require('telescope.builtin').lsp_references() end, bufopts)
+                vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, bufopts)
+                vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, bufopts)
+                vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, bufopts)
+                vim.keymap.set("n", "<leader>.", function() vim.lsp.buf.code_action() end, bufopts)
+                vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, bufopts)
+                vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, bufopts)
+                vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, bufopts)
+                vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, bufopts)
+                vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, bufopts)
+            end
+        })
     end
 }

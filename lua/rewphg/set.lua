@@ -33,3 +33,11 @@ vim.opt.colorcolumn = "80"
 vim.opt.laststatus = 3
 
 vim.diagnostic.config({ virtual_text = true })
+
+-- netrw (used by <leader>pv in remap.lua)
+vim.g.netrw_browse_split = 0
+vim.g.netrw_banner = 0
+vim.g.netrw_winsize = 25
+
+-- Disable omni for SQL
+vim.g.omni_sql_no_default_maps = 1

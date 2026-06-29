@@ -13,7 +13,8 @@ return {
             vim.wo.wrap = false
             vim.wo.number = true
             vim.wo.rnu = true
-            ColorMyPencils()
+            vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+            vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
         end)
 
 
@@ -29,7 +30,8 @@ return {
             vim.wo.number = false
             vim.wo.rnu = false
             vim.opt.colorcolumn = "0"
-            ColorMyPencils()
+            vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+            vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
         end)
     end
 }

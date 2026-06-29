@@ -1,8 +1,10 @@
 {
     "diagnostics.globals": [
-        "vim"
+        "vim",
+        "require"
     ],
     "diagnostics.disable": [
-        "missing-fields"
+        "missing-fields",
+        "undefined-doc-name"
     ]
 }

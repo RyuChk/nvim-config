@@ -53,6 +53,7 @@ return {
         local orig_format = conform.format
 
         conform.format = function(opts)
+            opts = opts or {}
             local bufnr = opts.buf or vim.api.nvim_get_current_buf()
             local cfg = load_config(bufnr) or defaults
             vim.notify("formatting...", vim.log.levels.INFO, { title = "Conform Formatter" })
@@ -71,7 +72,7 @@ return {
 
         vim.keymap.set({ "n", "v" }, "<leader>f", function()
             conform.format({
-                lsp_fallback = true,
+                lsp_format = "fallback",
                 async = false,
                 timeout_ms = 5000,
             })
